@@ -1,0 +1,8 @@
+node_modules
+test/assets/chopPages_output1.pdf
+test/assets/chopPages_output2.pdf
+test/assets/halfTheWholePages_output1.pdf
+test/assets/halfTheWholePages_output2.pdf
+test/assets/halfTheWholePages_output3.pdf
+test/assets/mergeForPrint_output.pdf
+dist/
