@@ -1,7 +1,10 @@
 # PDFBookHelper
 
+![pdfbookhelper](https://github.com/studenttwok/pdfbookhelper/blob/main/pdfbookhelper.jpg)
+
+
 A utility that helps to prepare print-ready book pdf. Currently support non-encrypted PDF ONLY.
-- Merge two pages into one page for print in order.
+- Merge two pages into one page for print in bookbinding order.
 - Chop pages with mediaBox/chopBox/trimBox/BleedBox/ArtBox, or customized area according to your need.
 - Split page into two half pages.
 - Show different kinds of boxes.
