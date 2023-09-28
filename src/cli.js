@@ -1,5 +1,3 @@
-//#!/usr/bin/env node
-
 'use strict'
 const commander = require('commander');
 const { getPagesBoxInfo, mergeForPrint, chopPages, halfTheWholePages } = require('./index.js');

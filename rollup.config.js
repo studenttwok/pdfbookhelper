@@ -15,6 +15,7 @@ export default [
     input: 'src/cli.js',
     output: {
       file: 'dist/cli.js',
+      banner: '#!/usr/bin/env node',
     },
   }
 ];
