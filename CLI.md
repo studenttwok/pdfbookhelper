@@ -110,7 +110,7 @@ npx pdfbookhelper rearrange input.pdf output.pdf 1 1 2,4,6 8-10
 
 Replace page number **1 1 2,4,6 8-10** with your desired. First page is 1. 
 
-You can specify the page ranges with a hypen and use comma to concate pages.
+You can specify the page ranges with a hyphen and use comma to concat pages.
 
 Example:
 
