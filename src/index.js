@@ -1,6 +1,6 @@
 'use strict'
 
-const { PDFDocument } = require("pdf-lib");
+const { PDFDocument, degrees  } = require("pdf-lib");
 const fs = require("fs");
 
 const getBookPageIndexSequence = (totalPageNumber) => {
@@ -41,8 +41,11 @@ const getPagesBoxInfo = async (inputFilename) => {
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
+    const angle = page.getRotation().angle;
+
     console.log("========================================");
     console.log("Page: ", i + 1 + "/" + pages.length);
+    console.log("Rotate angle: ", JSON.stringify(angle));
     console.log("MediaBox: ", JSON.stringify(page.getMediaBox()));
     console.log("CropBox: ", JSON.stringify(page.getCropBox()));
     console.log("BleedBox: ", JSON.stringify(page.getBleedBox()));
@@ -56,6 +59,7 @@ const getPagesBoxInfo = async (inputFilename) => {
       bleedBox: page.getBleedBox(),
       trimBox: page.getTrimBox(),
       artBox: page.getArtBox(),
+      angle: angle,
     };
     pageBoxInfos.push(boxes);
   }
@@ -211,8 +215,8 @@ const chopPages = async (inputFilename, outputFileName = undefined, cropBox) => 
 const halfTheWholePages = async (
   inputFilename,
   outputFileName = undefined,
-  skipFirst = false,
-  skipLast = false
+  retainFirst = false,
+  retainLast = false
 ) => {
 
   try {
@@ -237,7 +241,7 @@ const halfTheWholePages = async (
   const pages = pdfDoc.getPages();
 
   for (let i = 0; i < pages.length; i++) {
-    if ((skipFirst && i == 0) || (skipLast && i == pages.length - 1)) {
+    if ((retainFirst && i == 0) || (retainLast && i == pages.length - 1)) {
       // output the page directly without any change
       const copiedPages = await outPdfDoc.copyPages(pdfDoc, [i]);
       outPdfDoc.addPage(copiedPages[0]);
@@ -280,9 +284,192 @@ const halfTheWholePages = async (
   return true;
 };
 
+const rearrangePages = async (
+  inputFilename,
+  outputFileName = undefined,
+  rearrangedSequence = []
+) => {
+
+  try {
+    if (!fs.existsSync(inputFilename)) {
+      return null;
+    }
+  } catch(err) {
+    console.error(err);
+    return null;
+  }
+
+  if (!outputFileName) {
+    console.error("outputFileName is required");
+    return null;
+  }
+
+  const existingPdfBytes = fs.readFileSync(inputFilename);
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+  // Filter the input seq, make sure it's valid
+  // and convert it to 0-based index
+  const pageNumbers = pdfDoc.getPageCount();
+  const filteredSequence = rearrangedSequence.filter((value, index, self) => {
+    return value > 0 && value <= pageNumbers;
+  }).map((value) => {
+    return value - 1;
+  });
+
+  if (filteredSequence.length == 0) {
+    console.error("rearrangedSequence is required");
+    return null;
+  }
+
+  const outPdfDoc = await PDFDocument.create();
+
+  const copiedPages = await outPdfDoc.copyPages(pdfDoc, filteredSequence);
+  for (let i=0; i < copiedPages.length; i++) {
+    if (copiedPages[i] !== undefined) {
+      outPdfDoc.addPage(copiedPages[i]);
+    }
+  }
+
+  const pdfBytes = await outPdfDoc.save();
+  fs.writeFileSync(outputFileName, pdfBytes);
+
+  return true;
+}
+
+const appendPages = async (
+  inputFilename,
+  inputFilename2,
+  outputFileName = undefined,
+  isPrepend = false
+) => {
+
+  try {
+    if ((!fs.existsSync(inputFilename)) || (!fs.existsSync(inputFilename2)))  {
+      return null;
+    }
+  } catch(err) {
+    console.error(err);
+    return null;
+  }
+
+  if (!outputFileName) {
+    console.error("outputFileName is required");
+    return null;
+  }
+
+  const existingPdfBytes = fs.readFileSync(inputFilename);
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+  const existingPdf2Bytes = fs.readFileSync(inputFilename2);
+  const pdfDoc2 = await PDFDocument.load(existingPdf2Bytes);
+
+  const outPdfDoc = await PDFDocument.create();
+
+  const copiedPages = await outPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
+  const copiedPages2 = await outPdfDoc.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+
+  if (isPrepend) {
+    for (let i=0; i < copiedPages2.length; i++) {
+      if (copiedPages2[i] !== undefined) {
+        outPdfDoc.addPage(copiedPages2[i]);
+      }
+    }
+    for (let i=0; i < copiedPages.length; i++) {
+      if (copiedPages[i] !== undefined) {
+        outPdfDoc.addPage(copiedPages[i]);
+      }
+    }
+  } else {
+    for (let i=0; i < copiedPages.length; i++) {
+      if (copiedPages[i] !== undefined) {
+        outPdfDoc.addPage(copiedPages[i]);
+      }
+    }
+    for (let i=0; i < copiedPages2.length; i++) {
+      if (copiedPages2[i] !== undefined) {
+        outPdfDoc.addPage(copiedPages2[i]);
+      }
+    }
+  }
+
+  const pdfBytes = await outPdfDoc.save();
+  fs.writeFileSync(outputFileName, pdfBytes);
+
+  return true;
+}
+
+const rotatePages = async (
+  inputFilename,
+  outputFileName = undefined,
+  degree = 90,
+  pageSequence = []
+) => {
+
+  try {
+    if (!fs.existsSync(inputFilename)) {
+      return null;
+    }
+  } catch(err) {
+    console.error(err);
+    return null;
+  }
+
+  if (!outputFileName) {
+    console.error("outputFileName is required");
+    return null;
+  }
+
+  if (degree !== 90 && degree !== 180 && degree !== 270) {
+    console.log("Degree can only be 90, 180, 270");
+    return null;
+  }
+
+  const existingPdfBytes = fs.readFileSync(inputFilename);
+
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+  const outPdfDoc = await PDFDocument.create();
+
+  // Filter the input seq, make sure it's valid
+  // and convert it to 0-based index
+  const pageNumbers = pdfDoc.getPageCount();
+  const filteredSequence = pageSequence.filter((value, index, self) => {
+    return value > 0 && value <= pageNumbers && self.indexOf(value) === index
+  }).map((value) => {
+    return value - 1;
+  });
+
+  const copiedPages = await outPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
+  //console.log(filteredSequence);
+  for (let i=0; i < copiedPages.length; i++) {
+
+      // roate page if needed
+      if (filteredSequence.length === 0 || filteredSequence.indexOf(i) > -1) {
+        //console.log("Rotate", i);
+        const baseDegree = copiedPages[i].getRotation().angle;
+        let newDegree = baseDegree + degree;
+        if (newDegree >= 360) {
+          newDegree = newDegree - 360;
+        }
+        copiedPages[i].setRotation(degrees(newDegree));
+        
+      }
+      //console.log(copiedPages[i].getRotation().angle);
+      outPdfDoc.addPage(copiedPages[i]);
+  }
+
+  const pdfBytes = await outPdfDoc.save();
+  fs.writeFileSync(outputFileName, pdfBytes);
+
+  return true;
+}
+
 module.exports = {
   getPagesBoxInfo,
   mergeForPrint,
   chopPages,
   halfTheWholePages,
+  rearrangePages,
+  appendPages,
+  rotatePages,
 };

@@ -5,4 +5,7 @@ test/assets/halfTheWholePages_output1.pdf
 test/assets/halfTheWholePages_output2.pdf
 test/assets/halfTheWholePages_output3.pdf
 test/assets/mergeForPrint_output.pdf
+test/assets/rearrangePages_output.pdf
+test/assets/appendPages_output.pdf
+test/assets/rotatePages_output.pdf
 dist/

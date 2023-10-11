@@ -12,6 +12,7 @@ test('getPagesBoxInfo', async () => {
         expect(pagesBoxes[0]).toHaveProperty('bleedBox');
         expect(pagesBoxes[0]).toHaveProperty('cropBox');
         expect(pagesBoxes[0]).toHaveProperty('trimBox');
+        expect(pagesBoxes[0]).toHaveProperty('angle');
         expect(pagesBoxes[0].mediaBox.width).toBe(600);
         expect(pagesBoxes[0].mediaBox.height).toBe(600);
         expect(pagesBoxes[0].mediaBox.x).toBe(0);

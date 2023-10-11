@@ -1,6 +1,6 @@
 {
   "name": "pdfbookhelper",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A library helps to make print-ready book pdf file",
   "main": "dist/index.js",
   "files": [
