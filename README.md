@@ -11,7 +11,7 @@ A utility that helps to prepare print-ready booklet pdf. Currently support non-e
 - Show different kinds of boxes.
 
 ## NPM
-![NPM Repo](https://www.npmjs.com/package/pdfbookhelper)
+[NPM Repo](https://www.npmjs.com/package/pdfbookhelper)
 ```code
 npm install -g pdfbookhelper
 ```
